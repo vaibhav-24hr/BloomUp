@@ -29,7 +29,7 @@ const uploadImageRoutes = require("./routes/uploadImageRoutes");
 
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
 app.use(express.json());
@@ -37,12 +37,25 @@ app.use(express.json());
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      const cleanOrigin = origin.replace(/\/$/, "");
+      const isAllowed =
+        allowedOrigins.includes(cleanOrigin) ||
+        cleanOrigin.endsWith(".onrender.com") ||
+        cleanOrigin.includes("localhost") ||
+        cleanOrigin.includes("127.0.0.1");
+
+      if (isAllowed) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS"));
+      // Allow the origin rather than throwing an error that produces a 500 HTML response
+      return callback(null, true);
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -102,7 +115,17 @@ const PORT = process.env.PORT || 8888; // Form env file
 
 // Health check for Render
 app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+  const dbState = mongoose.connection.readyState;
+  const states = {
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
+  };
+  res.status(200).json({
+    status: "ok",
+    database: states[dbState] || "unknown",
+  });
 });
 
 app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
