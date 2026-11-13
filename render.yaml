@@ -15,7 +15,7 @@ services:
       - key: MONGODB_URI
         sync: false   # Set in Render dashboard with your Atlas connection string
       - key: DB_NAME
-        value: bloomup
+        value: BloomUp
       - key: ACCESS_TOKEN_SECRET
         sync: false   # Generate or paste a random secret
       - key: OPENAI_API_KEY

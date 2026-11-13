@@ -80,7 +80,7 @@ app.use("/api/ai", aiRoutes);
 // Connect MongoDB via mongoose
 mongoose
   .connect(process.env.MONGODB_URI, {
-    dbName: process.env.DB_NAME,
+    dbName: process.env.DB_NAME || "BloomUp",
   })
   .then(() => console.log("✅ Mongoose connected to MongoDB"))
   .catch((err) => console.error("❌ Mongoose connection error:", err));
