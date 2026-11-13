@@ -100,7 +100,12 @@ app.use("/api/categories", categoryRoutes);
 
 const PORT = process.env.PORT || 8888; // Form env file
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Health check for Render
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
 
 // const posts = [
 //   {
